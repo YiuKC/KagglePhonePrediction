@@ -527,4 +527,4 @@ if __name__ == "__main__":
 
     df = pd.read_csv("train.csv", index_col='id')
     count_missing_data(df)
-    X, y, X_num, X_cat = data_overview(df, target='health_condition', target_type='categorical', print_X_y= False, show_chart=False)
+    X, y, X_num, X_cat = data_overview(df, target='addicted_label', target_type='categorical', print_X_y= False, show_chart=False)
