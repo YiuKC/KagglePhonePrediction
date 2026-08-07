@@ -301,7 +301,37 @@ def analyze_predictor_target_relationships(df, target, target_type, X_num, X_cat
             
             plt.tight_layout()
             
-            plt.savefig(f"target_plots/Target_Categorical_vs_Num_{num_col}.png", dpi=300, bbox_inches='tight')
+            plt.savefig(f"target_plots/HistPlot_Target_Categorical_vs_Num_{num_col}.png", dpi=300, bbox_inches='tight')
+            
+            if show_chart:
+                plt.show()
+            plt.close()
+
+            fig, axes = plt.subplots(1, 2, figsize=figsize)
+            
+            sns.boxplot(
+                data=df, x=target, y=num_col, ax=axes[0], 
+                palette="Set2", hue=target, legend=False
+            )
+            axes[0].set_title(f'Box Plot: {num_col} by {target}', fontsize=12)
+            axes[0].set_xlabel(target)
+            axes[0].set_ylabel(num_col)
+            
+            sns.violinplot(
+                data=df, x=target, y=num_col, ax=axes[1], 
+                palette="Set2", hue=target, legend=False
+            )
+            axes[1].set_title(f'Density Shape: {num_col} by {target}', fontsize=12)
+            axes[1].set_xlabel(target)
+            axes[1].set_ylabel(num_col)
+            
+            if df[target].nunique() > 4:
+                axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=30, ha='right')
+                axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=30, ha='right')
+
+            plt.suptitle(f'Predictor Strength: {num_col} vs Target ({target})', fontsize=14, y=1.02)
+            plt.tight_layout()
+            plt.savefig(f"target_plots/ViolinPlot_Target_Categorical_vs_Num_{num_col}.png", dpi=300, bbox_inches='tight')
             
             if show_chart:
                 plt.show()
