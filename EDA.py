@@ -236,7 +236,7 @@ def numeric_vs_categorical(df, numerical, categorical, show_chart=False):
                 plt.show()
             plt.close()
 
-def analyze_predictor_target_relationships(df, target, target_type, X_num, X_cat, show_chart=False):
+def analyze_predictor_target_relationships(df, target, target_type, X_num, X_cat, show_chart=False, label_map=None, palette=None, bins=30, figsize=(8, 5)):
     """
     Evaluates relationships between predictors and target based on target_type.
     
@@ -262,35 +262,45 @@ def analyze_predictor_target_relationships(df, target, target_type, X_num, X_cat
         print(f" TARGET RELATIONSHIP ANALYSIS (Categorical Target: '{target}')")
         print("=" * 60)
 
-        # 1A. Numeric Predictors vs Categorical Target
         print("\n--- [1/2] NUMERIC PREDICTORS vs TARGET ---")
         for num_col in num_predictors:
-            fig, axes = plt.subplots(1, 2, figsize=(14, 4.5))
-            
-            # Box plot
-            sns.boxplot(
-                data=df, x=target, y=num_col, ax=axes[0], 
-                palette="Set2", hue=target, legend=False
-            )
-            axes[0].set_title(f'Box Plot: {num_col} by {target}', fontsize=12)
-            axes[0].set_xlabel(target)
-            axes[0].set_ylabel(num_col)
-            
-            # Violin plot (Density Distribution)
-            sns.violinplot(
-                data=df, x=target, y=num_col, ax=axes[1], 
-                palette="Set2", hue=target, legend=False
-            )
-            axes[1].set_title(f'Density Shape: {num_col} by {target}', fontsize=12)
-            axes[1].set_xlabel(target)
-            axes[1].set_ylabel(num_col)
-            
-            if df[target].nunique() > 4:
-                axes[0].set_xticklabels(axes[0].get_xticklabels(), rotation=30, ha='right')
-                axes[1].set_xticklabels(axes[1].get_xticklabels(), rotation=30, ha='right')
 
-            plt.suptitle(f'Predictor Strength: {num_col} vs Target ({target})', fontsize=14, y=1.02)
+            sns.set_theme(style='whitegrid')
+            df_plot = df.copy()
+            
+            if label_map is not None:
+                hue_name = target.replace("_", " ").title() + " Status"
+                df_plot[hue_name] = df_plot[target].map(label_map)
+                hue_order = list(label_map.values())
+            else:
+                hue_name = target.replace("_", " ").title()
+                unique_vals = sorted(df_plot[target].unique())
+                auto_map = {val: str(val).replace("_", " ").title() for val in unique_vals}
+                df_plot[hue_name] = df_plot[target].map(auto_map)
+                hue_order = list(auto_map.values())
+                
+            if palette is None:
+                palette = sns.color_palette("Set2", n_colors=len(hue_order))
+
+            plt.figure(figsize=figsize)
+            
+            sns.histplot(
+                data=df_plot,
+                x=num_col,
+                hue=hue_name,
+                hue_order=hue_order,
+                bins=bins,
+                kde=True,
+                palette=palette
+            )
+
+            num_title = num_col.replace("_", " ").title()
+            plt.title(f"{num_title} Distribution by {hue_name}", fontsize=13, fontweight="bold", pad=15)
+            plt.xlabel(f"{num_title}")
+            plt.ylabel("Frequency")
+            
             plt.tight_layout()
+            
             plt.savefig(f"target_plots/Target_Categorical_vs_Num_{num_col}.png", dpi=300, bbox_inches='tight')
             
             if show_chart:
